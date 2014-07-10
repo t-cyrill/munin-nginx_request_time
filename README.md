@@ -3,6 +3,9 @@ munin-nginx_request_time
 
 Munin plugin for nginx request time
 
+![munin-nginx_request_time example](https://raw.githubusercontent.com/t-cyrill/munin-nginx_request_time/master/images/example.png "munin-nginx_request_time example")
+
+
 Modes
 ----------------
 
