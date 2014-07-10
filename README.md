@@ -6,13 +6,13 @@ Munin plugin for nginx request time
 Modes
 ----------------
 
-* Default
+### Default
 
-min, median, 90th percentile, 95th percentile
+ * min, median, 90th percentile, 95th percentile
 
-* max
+### max
 
-max
+ * max
 
 Usage
 ----------------
@@ -34,13 +34,13 @@ ln -s nginx_request_time /etc/munin/plugins/nginx_request_time_max
 Configration
 ----------------
 
-* logfile
+### logfile
 
-ie. /var/log/nginx/access.log
+* ie. /var/log/nginx/access.log
 
-* loglimit
+### loglimit
 
-ie. 1000
+* ie. 1000
 
 ### Example
 
