@@ -1,0 +1,114 @@
+#!/usr/bin/perl -w
+
+=head1 NAME
+
+nginx_request_time - Munin plugin to show statistics of nginx's request_time.
+
+=head1 APPLICABLE SYSTEMS
+
+nginx request_time statistics
+
+=head1 CONFIGURATION
+
+File::ReadBackwards, Statistics::Lite, and Statistics::Descriptive are used and must be installed.
+
+You can override the log file location.
+
+  [nginx_request_time]
+      env.logfile /var/log/nginx/access.log
+      env.loglimit 1000
+
+Nginx must be configured to get $request_time.
+nginx_request_time expects TSV log format.
+
+Example format:
+log_format request_time_stats   '$time_local\t'
+                                '$status\t'
+                                '$request_time\t'
+                                '$remote_addr\t'
+                                '$upstream_addr\t'
+                                '$upstream_response_time\t'
+                                '$request';
+
+By default the last 1000 log lines are read, you may want to change this.
+
+=head1 MAGIC MARKERS
+
+  #%# family=auto
+  #%# capabilities=autoconf
+
+=head1 LICENSE
+
+MIT
+
+=cut
+
+use File::ReadBackwards;
+use Statistics::Lite qw(max min mean median);
+use Statistics::Descriptive;
+
+my $line_counter = exists $ENV{'loglimit'} ? $ENV{'loglimit'} : 1000;
+my $LOG = exists $ENV{'logfile'} ? $ENV{'logfile'}
+                                 : "/var/log/nginx/access.log";
+
+if (exists $ARGV[0] and $ARGV[0] eq "autoconf") {
+    unless (-r $LOG) {
+        print "$LOG not readable\n";
+    } else {
+        print "yes\n";
+    }
+    exit 0;
+}
+
+my $mode = $0;
+$mode =~ s/.*\/nginx_request_time//;
+
+if (exists $ARGV[0] and $ARGV[0] eq "config") {
+        print <<'EOS';
+graph_title NGINX response time
+graph_args -l 0 --base 1000
+graph_category nginx
+graph_vlabel millseconds
+EOS
+    if ($mode eq "_max") {
+        print <<'EOS';
+max.label max
+max.draw LINE2
+max.min 0
+EOS
+    } else {
+        print <<'EOS';
+min.label min
+min.draw LINE1
+min.min 0
+median.label median
+median.draw LINE2
+median.min 0
+percentile90.label 90th percentile
+percentile90.draw LINE2
+percentile90.min 0
+percentile95.label 95th percentile
+percentile95.draw LINE2
+percentile95.min 0
+EOS
+    }
+    exit 0;
+}
+
+my $log = `tail -${line_counter} ${LOG} | cut -f 3`;
+my @request_time_array = map { $_ * 1000 } split(/\s+/, $log);
+
+$stat = Statistics::Descriptive::Full->new();
+$stat->add_data(@request_time_array);
+$percentile90 = $stat->percentile(90);
+$percentile95 = $stat->percentile(95);
+
+my $min = min @request_time_array;
+my $max = max @request_time_array;
+my $median = median @request_time_array;
+
+print "min.value $min\n";
+print "max.value $max\n";
+print "median.value $median\n";
+print "percentile90.value $percentile90\n";
+print "percentile95.value $percentile95\n";
