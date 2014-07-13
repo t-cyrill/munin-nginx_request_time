@@ -95,8 +95,19 @@ EOS
     exit 0;
 }
 
-my $log = `tail -${line_counter} ${LOG} | cut -f 3`;
-my @request_time_array = map { $_ * 1000 } split(/\s+/, $log);
+my @request_time_array = ();
+my $log_handle = File::ReadBackwards->new($LOG);
+for (my $i = 0; $i < $line_counter; $i++) {
+  my $log_line = $bw->readline;
+  if (defined($log_line)) {
+    my $time_s = (split "\t", $log_line)[2];
+    if (!defined($time_s)) { next; }
+    push @request_time_array, $time_s * 1000;
+  } else {
+    last;
+  }
+}
+$log_handle->close;
 
 $stat = Statistics::Descriptive::Full->new();
 $stat->add_data(@request_time_array);
