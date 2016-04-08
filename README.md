@@ -23,6 +23,7 @@ Usage
 munin-nginx_request_time plugin needs Statistics modules.
 
 ```
+sudo cpanm install File::ReadBackwards
 sudo cpanm install Statistics::Lite
 sudo cpanm install Statistics::Descriptive
 ```
