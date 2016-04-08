@@ -98,7 +98,7 @@ EOS
 my @request_time_array = ();
 my $log_handle = File::ReadBackwards->new($LOG);
 for (my $i = 0; $i < $line_counter; $i++) {
-  my $log_line = $bw->readline;
+  my $log_line = $log_handle->readline;
   if (defined($log_line)) {
     my $time_s = (split "\t", $log_line)[2];
     if (!defined($time_s)) { next; }
